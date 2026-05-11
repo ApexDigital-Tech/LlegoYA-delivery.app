@@ -568,22 +568,24 @@ const App = () => {
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontWeight: 800 }}>Pedidos Disponibles</h3>
-                    <RefreshCw size={18} color="#94A3B8" className="pulse" />
+                    <button onClick={fetchData} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <RefreshCw size={18} color="#94A3B8" className={loading ? 'spin' : ''} />
+                    </button>
                   </div>
                   
                   {db.orders.filter(o => o.stage === 3).map(o => (
-                    <motion.div key={o.id} layout initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', border: '3px solid #F59E0B', marginBottom: '1.2rem' }}>
+                    <motion.div key={o.id} layout initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', border: '3px solid #10B981', marginBottom: '1.2rem', boxShadow: '0 20px 40px rgba(16,185,129,0.1)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div>
                           <div style={{ fontWeight: 950, fontSize: '1.2rem' }}>{o.vendor_name}</div>
                           <div style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}><MapPin size={14} /> Mercado Rodríguez</div>
                         </div>
-                        <div style={{ background: '#F59E0B', color: 'white', padding: '6px 15px', borderRadius: '12px', fontWeight: 950, fontSize: '0.8rem' }}>Bs. 5.00</div>
+                        <div style={{ background: '#10B981', color: 'white', padding: '6px 15px', borderRadius: '12px', fontWeight: 950, fontSize: '0.8rem' }}>Bs. 5.00</div>
                       </div>
-                      <div style={{ background: '#FFFBEB', padding: '1rem', borderRadius: '15px', margin: '1.5rem 0', fontSize: '0.85rem', color: '#B45309', fontWeight: 600 }}>
+                      <div style={{ background: '#ECFDF5', padding: '1rem', borderRadius: '15px', margin: '1.5rem 0', fontSize: '0.85rem', color: '#047857', fontWeight: 600 }}>
                         Recoger: {o.items.join(', ')}
                       </div>
-                      <button className="btn-primary" style={{ width: '100%', height: '65px', background: '#1E293B' }} onClick={() => updateOrder(o.id, 4)}>Aceptar este pedido</button>
+                      <button className="btn-primary" style={{ width: '100%', height: '65px', background: '#064E3B' }} onClick={() => updateOrder(o.id, 4)}>Aceptar este pedido</button>
                     </motion.div>
                   ))}
                   {db.orders.filter(o => o.stage === 3).length === 0 && (
