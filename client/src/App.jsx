@@ -491,7 +491,7 @@ const App = () => {
         {/* --- CASERITA PANEL --- */}
         {role === 'vendor' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Header title="Gestión de Puesto" subtitle={userName} icon={Store} />
+            <Header title="Gestión de Puesto" subtitle={`${userName} - ID: ${vid.substring(0,8)}...`} icon={Store} />
             
             <div style={{ padding: '0 1.5rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '2.5rem' }}>
