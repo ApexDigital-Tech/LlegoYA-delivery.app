@@ -86,42 +86,34 @@ const App = () => {
     };
   }, []);
 
-  // 2. Self-Heartbeat & Local Persistence
+  // 2. Self-Heartbeat (Presence only)
   useEffect(() => {
     const timer = setInterval(() => {
-      const currentDb = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"orders":[],"presence":{}}');
-      
-      // Update our own presence if we are a chaski
-      if (role === 'chaski' && phone) {
-        currentDb.presence[phone] = { 
-          online, 
-          name: userName, 
-          lastSeen: Date.now() 
-        };
-      } else if (role === 'client' && phone) {
-        currentDb.presence[phone] = {
-          online: true,
-          name: userName,
-          lastSeen: Date.now()
-        };
-      }
-
-      // Cleanup stale presence (> 10s)
-      Object.keys(currentDb.presence).forEach(k => {
-        if (Date.now() - currentDb.presence[k].lastSeen > 10000) {
-          delete currentDb.presence[k];
+      setDb(prev => {
+        const newPresence = { ...prev.presence };
+        
+        // Update our own presence
+        if (phone) {
+          newPresence[phone] = { 
+            online: true, 
+            name: userName, 
+            lastSeen: Date.now() 
+          };
         }
-      });
 
-      // Save and notify
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentDb));
-      if (JSON.stringify(currentDb) !== JSON.stringify(db)) {
-        setDb(currentDb);
-      }
-    }, 2000);
+        // Cleanup stale presence (> 10s)
+        Object.keys(newPresence).forEach(k => {
+          if (Date.now() - newPresence[k].lastSeen > 10000) {
+            delete newPresence[k];
+          }
+        });
+
+        return { ...prev, presence: newPresence };
+      });
+    }, 5000);
 
     return () => clearInterval(timer);
-  }, [db, role, phone, online, userName]);
+  }, [phone, userName]);
 
   // 3. Save Session
   useEffect(() => {
