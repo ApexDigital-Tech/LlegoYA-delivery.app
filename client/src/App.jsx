@@ -44,10 +44,10 @@ const App = () => {
   const [demoViewAll, setDemoViewAll] = useState(false);
   const [notification, setNotification] = useState(null); // { message, type: 'success' | 'error' }
 
-  // --- SUPABASE SYNC ENGINE ---
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+  // --- DATA SYNC ENGINE ---
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
       const { data: vData } = await supabase.from('vendors').select('*');
       setVendors(vData || []);
 
@@ -61,10 +61,17 @@ const App = () => {
 
       const { data: oData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
       setDb(prev => ({ ...prev, orders: oData || [] }));
+    } catch (e) {
+      console.error("Fetch error:", e);
+    } finally {
       setLoading(false);
-    };
+    }
+  }, []);
 
+  useEffect(() => {
     fetchData();
+
+    // Realtime Subscriptions
 
     // Realtime Subscriptions
     const orderSubscription = supabase
