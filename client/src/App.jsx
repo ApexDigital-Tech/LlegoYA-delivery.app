@@ -631,7 +631,7 @@ const App = () => {
               <div key={o.id} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                   <div>
-                    <div style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: 900 }}>{o.id} • {o.created_at}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: 900 }}>{o.id} • {new Date(o.created_at).toLocaleTimeString()}</div>
                     <h3 style={{ margin: '4px 0', fontSize: '1.1rem', fontWeight: 900 }}>{role === 'client' ? o.vendor_name : o.client_name}</h3>
                   </div>
                   <div style={{ background: o.stage === 6 ? '#10B98120' : '#6366F120', color: o.stage === 6 ? '#10B981' : '#6366F1', padding: '6px 12px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 900 }}>{o.status.toUpperCase()}</div>
@@ -651,7 +651,11 @@ const App = () => {
                 )}
               </div>
             ))}
-            {db.orders.length === 0 && <div style={{ textAlign: 'center', padding: '5rem', color: '#94A3B8' }}>No hay actividad aún.</div>}
+            {(role === 'client' ? db.orders.filter(o => o.client_phone === phone) : 
+              role === 'chaski' ? db.orders.filter(o => o.courier_id === phone) :
+              db.orders.filter(o => o.vendor_id === vid)).length === 0 && (
+              <div style={{ textAlign: 'center', padding: '5rem', color: '#94A3B8' }}>No hay actividad aún.</div>
+            )}
           </div>
         )}
 
