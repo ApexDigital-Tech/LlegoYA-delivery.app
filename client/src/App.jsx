@@ -553,7 +553,7 @@ const App = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ opacity: 0.6, fontSize: '0.85rem', fontWeight: 700 }}>MIS GANANCIAS</div>
-                    <div style={{ fontSize: '3rem', fontWeight: 950, marginTop: '5px' }}>Bs. {(db.orders.filter(o=>o.courier===phone && o.stage>=5).length * 5).toFixed(2)}</div>
+                    <div style={{ fontSize: '3rem', fontWeight: 950, marginTop: '5px' }}>Bs. {(db.orders.filter(o=>o.courier_id===phone && o.stage>=5).length * 5).toFixed(2)}</div>
                   </div>
                   <button onClick={() => setOnline(!online)} style={{ background: online ? '#10B981' : '#EF4444', color: 'white', padding: '10px 20px', borderRadius: '15px', fontWeight: 900, border: 'none', fontSize: '0.75rem' }}>
                     {online ? 'ONLINE' : 'OFFLINE'}
@@ -594,7 +594,7 @@ const App = () => {
                   )}
 
                   <h3 style={{ marginTop: '3rem', marginBottom: '1.5rem' }}>Mis Entregas Actuales</h3>
-                  {db.orders.filter(o => o.courier === phone && o.stage === 4).map(o => (
+                  {db.orders.filter(o => o.courier_id === phone && o.stage === 4).map(o => (
                     <motion.div key={o.id} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', border: '3px solid #10B981', marginBottom: '1.2rem' }}>
                       <div style={{ fontWeight: 950 }}>Destino: {o.client_name}</div>
                       <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '5px' }}>Orden #{o.id} • Entregar ASAP</div>
