@@ -5,6 +5,7 @@ dotenv.config();
 
 const vendors = [
   {
+    id: 'd290f1ee-6c54-4b01-90e6-d701748f0851',
     name: 'Puesto de Doña María',
     market_name: 'La Cancha',
     category: 'Salteñas',
@@ -15,6 +16,7 @@ const vendors = [
     is_verified: true
   },
   {
+    id: 'd290f1ee-6c54-4b01-90e6-d701748f0852',
     name: 'Jugos El Valle',
     market_name: 'Mercado Rodriguez',
     category: 'Jugos',
@@ -36,7 +38,7 @@ const seedDB = async () => {
 
     const { data: createdVendors, error: vError } = await supabase
       .from('vendors')
-      .insert(vendors)
+      .upsert(vendors)
       .select();
 
     if (vError) throw vError;

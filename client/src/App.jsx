@@ -42,6 +42,7 @@ const App = () => {
   const [payState, setPayState] = useState('none');
   const [showBot, setShowBot] = useState(false);
   const [demoViewAll, setDemoViewAll] = useState(false);
+  const [notification, setNotification] = useState(null); // { message, type: 'success' | 'error' }
 
   // --- SUPABASE SYNC ENGINE ---
   useEffect(() => {
@@ -148,10 +149,9 @@ const App = () => {
       } else if (phone.startsWith('6')) {
         setRole('vendor');
         const d = phone[7];
-        if (d === '1') { setVid('v1'); setUserName('Caserita María'); }
-        else if (d === '2') { setVid('v2'); setUserName('Caserita Jugos'); }
-        else if (d === '3') { setVid('v3'); setUserName('Caserita Empanadas'); }
-        else { setVid('v1'); setUserName('Caserita Pro'); }
+        if (d === '1') { setVid('d290f1ee-6c54-4b01-90e6-d701748f0851'); setUserName('Caserita María'); }
+        else if (d === '2') { setVid('d290f1ee-6c54-4b01-90e6-d701748f0852'); setUserName('Caserita Jugos'); }
+        else { setVid('d290f1ee-6c54-4b01-90e6-d701748f0851'); setUserName('Caserita María'); }
       } else if (phone.startsWith('7')) {
         setRole('chaski'); setOnline(true);
         const d = phone[7]; setUserName(`Chaski0${d}`);
@@ -164,46 +164,57 @@ const App = () => {
   };
 
   const placeOrder = async () => {
-    const order = {
-      id: `LY-${Math.floor(1000 + Math.random() * 9000)}`,
-      vendor_id: selectedV.id,
-      vendor_name: selectedV.name,
-      total: cart.reduce((s,i)=>s+i.p.price*i.q,0) + 6,
-      items: cart.map(i=>`${i.p.name} x${i.q}`),
-      status: 'pendiente',
-      stage: 1,
-      client_phone: phone,
-      client_name: userName,
-      courier_id: '', 
-      courier_name: '',
-      latitude: -16.5 + Math.random() * 0.1,
-      longitude: -68.1 + Math.random() * 0.1
-    };
-    
-    const { error } = await supabase.from('orders').insert([order]);
-    if (!error) {
+    try {
+      const order = {
+        id: `LY-${Math.floor(1000 + Math.random() * 9000)}`,
+        vendor_id: selectedV.id,
+        vendor_name: selectedV.name,
+        total: cart.reduce((s,i)=>s+i.p.price*i.q,0) + 6,
+        items: cart.map(i=>`${i.p.name} x${i.q}`),
+        status: 'pendiente',
+        stage: 1,
+        client_phone: phone,
+        client_name: userName,
+        courier_id: '', 
+        courier_name: '',
+        latitude: -16.5 + Math.random() * 0.1,
+        longitude: -68.1 + Math.random() * 0.1
+      };
+      
+      const { error } = await supabase.from('orders').insert([order]);
+      
+      if (error) throw error;
+
       setCart([]);
       setPayState('none');
       setShowBot(true);
-    } else {
-      console.error('Error placing order:', error);
+      setNotification({ message: '¡Pedido realizado con éxito!', type: 'success' });
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'Error al realizar el pedido.', type: 'error' });
     }
   };
 
   const updateOrder = async (id, s) => {
-    const states = ['pendiente', 'preparando', 'listo', 'en ruta', 'entregado', 'concluido'];
-    const updateData = { stage: s, status: states[s-1] };
-    if (s === 4) { 
-      updateData.courier_id = phone; 
-      updateData.courier_name = userName; 
-    }
-    
-    const { error } = await supabase
-      .from('orders')
-      .update(updateData)
-      .eq('id', id);
+    try {
+      const states = ['pendiente', 'preparando', 'listo', 'en ruta', 'entregado', 'concluido'];
+      const updateData = { stage: s, status: states[s-1] };
+      if (s === 4) { 
+        updateData.courier_id = phone; 
+        updateData.courier_name = userName; 
+      }
       
-    if (error) console.error('Error updating order:', error);
+      const { error } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', id);
+        
+      if (error) throw error;
+      setNotification({ message: `Pedido actualizado a: ${states[s-1]}`, type: 'success' });
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'Error al actualizar el pedido.', type: 'error' });
+    }
   };
 
   const resetAll = () => {
@@ -278,8 +289,32 @@ const App = () => {
     </div>
   );
 
+  const Notify = () => (
+    <AnimatePresence>
+      {notification && (
+        <motion.div 
+          initial={{ opacity: 0, y: -50, x: '-50%' }}
+          animate={{ opacity: 1, y: 20, x: '-50%' }}
+          exit={{ opacity: 0, y: -50, x: '-50%' }}
+          onAnimationComplete={() => setTimeout(() => setNotification(null), 3000)}
+          style={{ 
+            position: 'fixed', top: 0, left: '50%', zIndex: 10000,
+            background: notification.type === 'success' ? '#10B981' : '#EF4444',
+            color: 'white', padding: '15px 30px', borderRadius: '20px',
+            boxShadow: '0 15px 30px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '12px',
+            fontWeight: 800, fontSize: '0.9rem', width: 'max-content', maxWidth: '90vw'
+          }}
+        >
+          {notification.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+          {notification.message}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
   return (
     <div className="app-container">
+      <Notify />
       <div className="dashboard">
         
         {/* --- ADMIN VIEW --- */}
