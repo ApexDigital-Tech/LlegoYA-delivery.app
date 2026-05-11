@@ -202,16 +202,29 @@ const App = () => {
     }
   };
 
+  const logEvent = async (orderId, action) => {
+    try {
+      await supabase.from('order_logs').insert([{
+        order_id: orderId,
+        actor_name: userName,
+        actor_role: role,
+        action
+      }]);
+    } catch (e) { console.error("Log error:", e); }
+  };
+
   const updateOrder = async (id, s) => {
     try {
-      const states = ['pendiente', 'preparando', 'listo', 'en ruta', 'entregado', 'concluido'];
+      const states = ['pendiente', 'preparando', 'listo', 'en ruta', 'recogido', 'entregado', 'concluido'];
       const updateData = { stage: s, status: states[s-1] };
+      
       if (s === 4) { 
         updateData.courier_id = phone; 
         updateData.courier_name = userName; 
       }
 
       console.log(`Updating order ${id} to stage ${s}...`);
+      await logEvent(id, `Cambio a estado: ${states[s-1]}`);
       
       // Optimistic update
       setDb(prev => ({
@@ -229,7 +242,7 @@ const App = () => {
     } catch (err) {
       console.error('Update error:', err);
       setNotification({ message: 'Error de conexión. Reintentando...', type: 'error' });
-      fetchData(); // Sync back
+      fetchData();
     }
   };
 
@@ -618,64 +631,76 @@ const App = () => {
                       <p style={{ color: '#64748B', fontSize: '0.85rem' }}>Esperando que la Caserita termine un pedido...</p>
                     </div>
                   )}
-
-                  <h3 style={{ marginTop: '3rem', marginBottom: '1.5rem' }}>Mis Entregas Actuales</h3>
-                  {db.orders.filter(o => o.courier_id === phone && o.stage === 4).map(o => (
-                    <motion.div key={o.id} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', border: '3px solid #10B981', marginBottom: '1.2rem' }}>
-                      <div style={{ fontWeight: 950 }}>Destino: {o.client_name}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '5px' }}>Orden #{o.id} • Entregar ASAP</div>
-                      <button className="btn-primary" style={{ width: '100%', marginTop: '1.5rem', height: '65px' }} onClick={() => updateOrder(o.id, 5)}>Confirmar Entrega</button>
+                  <h3 style={{ marginTop: '3rem', marginBottom: '1.5rem' }}>Mi Ruta Actual</h3>
+                  {db.orders.filter(o => o.courier_id === phone && o.stage >= 4 && o.stage < 7).map(o => (
+                    <motion.div key={o.id} className="glass-panel" style={{ padding: '2rem', borderRadius: '40px', border: '3px solid #6366F1', marginBottom: '1.5rem', background: 'white' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <div style={{ background: '#6366F1', color: 'white', padding: '6px 15px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 950 }}>
+                          {o.stage === 4 ? 'VAS CAMINO AL PUESTO' : o.stage === 5 ? 'TIENES EL PEDIDO' : 'ENTREGANDO'}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 700 }}>#{o.id.slice(-4)}</div>
+                      </div>
+                      <div style={{ marginBottom: '2rem' }}>
+                        <div style={{ fontSize: '0.9rem', color: '#64748B' }}>{o.stage === 4 ? 'Recoger de:' : 'Entregar a:'}</div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 950, color: '#1E293B', marginTop: '5px' }}>{o.stage === 4 ? o.vendor_name : o.client_name}</div>
+                      </div>
+                      {o.stage === 4 && (
+                        <button className="btn-primary" style={{ width: '100%', height: '70px', background: '#6366F1' }} onClick={() => updateOrder(o.id, 5)}>
+                          Ya recibí el pedido (Recogido)
+                        </button>
+                      )}
+                      {o.stage === 5 && (
+                        <button className="btn-primary" style={{ width: '100%', height: '70px', background: '#10B981' }} onClick={() => updateOrder(o.id, 6)}>
+                          ¡Ya lo entregué al cliente!
+                        </button>
+                      )}
+                      {o.stage === 6 && (
+                        <button className="btn-primary" style={{ width: '100%', height: '70px', background: '#0F172A' }} onClick={() => updateOrder(o.id, 7)}>
+                          Finalizar y Archivar
+                        </button>
+                      )}
                     </motion.div>
                   ))}
                 </>
               ) : (
                 <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
-                  <Power size={60} color="#CBD5E1" style={{ marginBottom: '2rem' }} />
-                  <h3 style={{ color: '#64748B' }}>Estás fuera de línea</h3>
-                  <p style={{ fontSize: '0.85rem', color: '#94A3B8', marginTop: '8px' }}>Activa tu estado para recibir pedidos y ganar dinero.</p>
                 </div>
-              )}
-            </div>
-          </motion.div>
-        )}
+              </motion.div>
+            )}
 
-        {/* --- COMMON HISTORY VIEW --- */}
-        {view === 'history' && (
-          <div style={{ padding: '1.5rem' }}>
-            <Header title="Mis Pedidos" subtitle="HISTORIAL RECIENTE" icon={History} />
-            {(role === 'client' ? db.orders.filter(o => o.client_phone === phone) : 
-              role === 'chaski' ? db.orders.filter(o => o.courier_id === phone) :
-              db.orders.filter(o => o.vendor_id === vid)).map(o => (
-              <div key={o.id} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: 900 }}>{o.id} • {new Date(o.created_at).toLocaleTimeString()}</div>
-                    <h3 style={{ margin: '4px 0', fontSize: '1.1rem', fontWeight: 900 }}>{role === 'client' ? o.vendor_name : o.client_name}</h3>
-                  </div>
-                  <div style={{ background: o.stage === 6 ? '#10B98120' : '#6366F120', color: o.stage === 6 ? '#10B981' : '#6366F1', padding: '6px 12px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 900 }}>{o.status.toUpperCase()}</div>
-                </div>
-                
-                {o.stage < 6 && (
-                  <div className="vertical-timeline">
-                    <div className={`timeline-step ${o.stage >= 1 ? 'active' : ''}`}><div className="step-marker"><Check size={12}/></div><span>Confirmado</span></div>
-                    <div className={`timeline-step ${o.stage >= 3 ? 'active' : ''}`}><div className="step-marker"><Check size={12}/></div><span>En Puesto</span></div>
-                    <div className={`timeline-step ${o.stage >= 4 ? 'active' : ''}`}><div className="step-marker"><Check size={12}/></div><span>En Camino</span></div>
-                    <div className={`timeline-step ${o.stage >= 5 ? 'active' : ''}`}><div className="step-marker"><Check size={12}/></div><span>Entregado</span></div>
-                  </div>
-                )}
-                
-                {role === 'client' && o.stage === 5 && (
-                  <button className="btn-primary" style={{ width: '100%', marginTop: '1rem' }} onClick={() => updateOrder(o.id, 6)}>Confirmar Recibido</button>
+            {/* --- COMMON HISTORY VIEW --- */}
+            {view === 'history' && (
+              <div className="dashboard">
+                <Header title="Mis Pedidos" subtitle="HISTORIAL DE ACTIVIDAD" icon={History} />
+                {(db.orders.filter(o => 
+                  (role === 'cliente' && o.client_phone === phone) || 
+                  (role === 'chaski' && o.courier_id === phone) ||
+                  (role === 'caserita' && o.vendor_id === phone) ||
+                  role === 'admin'
+                )).length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '5rem 2rem', color: '#94A3B8' }}>No hay pedidos registrados aún.</div>
+                ) : (
+                  db.orders.filter(o => 
+                    (role === 'cliente' && o.client_phone === phone) || 
+                    (role === 'chaski' && o.courier_id === phone) ||
+                    (role === 'caserita' && o.vendor_id === phone) ||
+                    role === 'admin'
+                  ).map(o => (
+                    <motion.div key={o.id} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', marginBottom: '1.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                        <div style={{ fontWeight: 950, fontSize: '1.1rem' }}>{o.vendor_name}</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94A3B8' }}>#{o.id.slice(-4)}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+                        <div className={`status-dot ${o.stage >= 6 ? 'green' : 'gray'} pulse`} />
+                        <div style={{ fontSize: '0.8rem', fontWeight: 900, textTransform: 'uppercase', color: o.stage >= 6 ? '#10B981' : '#64748B' }}>{o.status}</div>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#475569', fontWeight: 600 }}>{o.items.join(', ')}</div>
+                    </motion.div>
+                  ))
                 )}
               </div>
-            ))}
-            {(role === 'client' ? db.orders.filter(o => o.client_phone === phone) : 
-              role === 'chaski' ? db.orders.filter(o => o.courier_id === phone) :
-              db.orders.filter(o => o.vendor_id === vid)).length === 0 && (
-              <div style={{ textAlign: 'center', padding: '5rem', color: '#94A3B8' }}>No hay actividad aún.</div>
             )}
-          </div>
-        )}
 
         {/* --- PROFILE VIEW --- */}
         {view === 'profile' && (
