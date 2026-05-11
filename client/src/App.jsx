@@ -77,8 +77,12 @@ const App = () => {
     const orderSubscription = supabase
       .channel('orders_channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+        console.log('🔔 Realtime Event:', payload.eventType, payload.new?.id);
         if (payload.eventType === 'INSERT') {
-          setDb(prev => ({ ...prev, orders: [payload.new, ...prev.orders] }));
+          setDb(prev => {
+            if (prev.orders.find(o => o.id === payload.new.id)) return prev;
+            return { ...prev, orders: [payload.new, ...prev.orders] };
+          });
         } else if (payload.eventType === 'UPDATE') {
           setDb(prev => ({
             ...prev,
@@ -88,8 +92,12 @@ const App = () => {
       })
       .subscribe();
 
+    // Redundancy: Polling fallback every 15s
+    const pollTimer = setInterval(fetchData, 15000);
+
     return () => {
       supabase.removeChannel(orderSubscription);
+      clearInterval(pollTimer);
     };
   }, []);
 
@@ -202,17 +210,26 @@ const App = () => {
         updateData.courier_id = phone; 
         updateData.courier_name = userName; 
       }
+
+      console.log(`Updating order ${id} to stage ${s}...`);
       
+      // Optimistic update
+      setDb(prev => ({
+        ...prev,
+        orders: prev.orders.map(o => o.id === id ? { ...o, ...updateData } : o)
+      }));
+
       const { error } = await supabase
         .from('orders')
         .update(updateData)
         .eq('id', id);
         
       if (error) throw error;
-      setNotification({ message: `Pedido actualizado a: ${states[s-1]}`, type: 'success' });
+      setNotification({ message: `¡Pedido ${states[s-1]}!`, type: 'success' });
     } catch (err) {
-      console.error(err);
-      setNotification({ message: 'Error al actualizar el pedido.', type: 'error' });
+      console.error('Update error:', err);
+      setNotification({ message: 'Error de conexión. Reintentando...', type: 'error' });
+      fetchData(); // Sync back
     }
   };
 
