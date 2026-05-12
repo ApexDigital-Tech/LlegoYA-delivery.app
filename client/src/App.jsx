@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { 
-  ShoppingBag, Star, Clock, MapPin, Navigation, 
-  ArrowLeft, ShoppingCart, User, Home, Plus, Minus, 
-  X, CheckCircle, Store, TrendingUp, Shield, History, 
-  LayoutDashboard, LogOut, ChevronRight, Phone, Lock, Send,
-  CreditCard, Smartphone, Check, Search, Bell, Filter, Menu,
-  DollarSign, Truck, Package, PieChart, BarChart3, Info, Power,
-  Eye, EyeOff, AlertCircle, Map, Activity, Users, Settings,
-  RefreshCw, Zap, Award, Coffee
+  ShoppingBag, Star, Clock, MapPin, ArrowLeft, Plus, 
+  CheckCircle, Store, TrendingUp, Shield, History, 
+  LayoutDashboard, ChevronRight, Phone, Smartphone, 
+  CreditCard, Search, RefreshCw, Zap, Award, 
+  Truck, BarChart3, Info, Power, User, Eye, EyeOff, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabase';
@@ -156,10 +153,15 @@ const App = () => {
         setRole('admin'); setUserName('Super Admin');
       } else if (phone.startsWith('6')) {
         setRole('vendor');
-        const d = phone[7];
-        if (d === '1') { setVid('d290f1ee-6c54-4b01-90e6-d701748f0851'); setUserName('Caserita María'); }
-        else if (d === '2') { setVid('d290f1ee-6c54-4b01-90e6-d701748f0852'); setUserName('Caserita Jugos'); }
-        else { setVid('d290f1ee-6c54-4b01-90e6-d701748f0851'); setUserName('Caserita María'); }
+        setVid(phone); // Use the phone as VID directly for the 6000001-5 sequence
+        const names = {
+          '6000001': 'El Horno',
+          '6000002': 'Doña Paulina',
+          '6000003': 'Mercado Central',
+          '6000004': 'Tía María',
+          '6000005': 'El Torito'
+        };
+        setUserName(names[phone] || 'Caserita');
       } else if (phone.startsWith('7')) {
         setRole('chaski'); setOnline(true);
         const d = phone[7]; setUserName(`Chaski0${d}`);
@@ -638,7 +640,7 @@ const App = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ opacity: 0.6, fontSize: '0.85rem', fontWeight: 700 }}>MIS GANANCIAS</div>
-                    <div style={{ fontSize: '3rem', fontWeight: 950, marginTop: '5px' }}>Bs. {(db.orders.filter(o=>o.courier_id===phone && o.stage>=5).length * 5).toFixed(2)}</div>
+                    <div style={{ fontSize: '3rem', fontWeight: 950, marginTop: '5px' }}>Bs. {(db.orders.filter(o => o.courier_id === phone && o.stage >= 5).length * 5).toFixed(2)}</div>
                   </div>
                   <button onClick={() => setOnline(!online)} style={{ background: online ? '#10B981' : '#EF4444', color: 'white', padding: '10px 20px', borderRadius: '15px', fontWeight: 900, border: 'none', fontSize: '0.75rem' }}>
                     {online ? 'ONLINE' : 'OFFLINE'}
@@ -712,9 +714,14 @@ const App = () => {
                 </>
               ) : (
                 <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+                  <Power size={50} color="#CBD5E1" style={{ marginBottom: '1.5rem' }} />
+                  <h3 style={{ color: '#64748B', fontWeight: 800 }}>Estás en modo Offline</h3>
+                  <p style={{ fontSize: '0.85rem', color: '#94A3B8', marginTop: '5px' }}>Ponte online para recibir pedidos.</p>
                 </div>
-              </motion.div>
-            )}
+              )}
+            </div>
+          </motion.div>
+        )}
 
             {/* --- COMMON HISTORY VIEW --- */}
             {view === 'history' && (
