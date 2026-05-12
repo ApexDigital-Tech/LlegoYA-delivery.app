@@ -623,7 +623,13 @@ const App = () => {
                       <DollarSign size={22} color="#10B981" />
                     </div>
                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>VENTAS HOY</span>
-                    <strong style={{ fontSize: '1.5rem', color: '#0F172A' }}>Bs. {db.orders.filter(o => String(o.vendor_id) === String(vid)).reduce((s, o) => s + o.total, 0).toFixed(2)}</strong>
+                    <strong style={{ fontSize: '1.5rem', color: '#0F172A' }}>Bs. {db.orders.filter(o => {
+                      const oid = String(o.vendor_id).trim();
+                      const targetVid = String(vid).trim();
+                      return oid === targetVid || 
+                             (oid.length === 7 && targetVid === '6000000' + oid.slice(-1)) ||
+                             (targetVid.length === 7 && oid === '6000000' + targetVid.slice(-1));
+                    }).reduce((s, o) => s + o.total, 0).toFixed(2)}</strong>
                   </div>
                   <div className="admin-premium-card" style={{ borderBottom: '5px solid #F59E0B', background: 'white' }}>
                     <div style={{ background: '#F59E0B20', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
@@ -642,7 +648,14 @@ const App = () => {
                 </div>
 
                 <AnimatePresence>
-                  {(demoViewAll ? db.orders : db.orders.filter(o => String(o.vendor_id) === String(vid))).filter(o => o.stage < 3).map(o => (
+                {(demoViewAll ? db.orders : db.orders.filter(o => {
+                  const oid = String(o.vendor_id).trim();
+                  const targetVid = String(vid).trim();
+                  // Match even if one is 7 digits and other is 8
+                  return oid === targetVid || 
+                         (oid.length === 7 && targetVid === '6000000' + oid.slice(-1)) ||
+                         (targetVid.length === 7 && oid === '6000000' + targetVid.slice(-1));
+                })).filter(o => o.stage < 3).map(o => (
                     <motion.div key={o.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="glass-panel" style={{ padding: '2rem', borderRadius: '40px', marginBottom: '1.5rem', borderLeft: '10px solid #00D1B2', boxShadow: '0 15px 30px rgba(0,0,0,0.05)' }}>
                       {demoViewAll && String(o.vendor_id) !== String(vid) && <div style={{ background: '#6366F1', color: 'white', fontSize: '0.65rem', padding: '6px 14px', borderRadius: '12px', display: 'inline-block', marginBottom: '1.2rem', fontWeight: 900, textTransform: 'uppercase' }}>DESTINADO A: {o.vendor_name}</div>}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
