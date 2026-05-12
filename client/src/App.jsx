@@ -4,7 +4,7 @@ import {
   CheckCircle, Store, TrendingUp, Shield, History, 
   LayoutDashboard, ChevronRight, Phone, Smartphone, 
   CreditCard, Search, RefreshCw, Zap, Award, DollarSign, Settings, Home, LogOut, Lock,
-  Truck, BarChart3, Info, Power, User, Eye, EyeOff, AlertCircle
+  Truck, BarChart3, Info, Power, User, Users, Eye, EyeOff, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabase';
