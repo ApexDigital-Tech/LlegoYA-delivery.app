@@ -569,8 +569,8 @@ const App = () => {
 
         {/* --- CASERITA PANEL --- */}
         {role === 'vendor' && (() => {
-          // Use the central db.vendors for perfect synchronization with the catalog
-          const currentV = db.vendors.find(v => String(v.id).trim() === String(vid).trim());
+          // Robust check for db.vendors to prevent blank screen
+          const currentV = (db.vendors || []).find(v => String(v.id).trim() === String(vid).trim());
           
           if (!currentV) {
             return (
