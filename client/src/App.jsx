@@ -43,6 +43,7 @@ const App = () => {
   const [showBot, setShowBot] = useState(false);
   const [demoViewAll, setDemoViewAll] = useState(false);
   const [notification, setNotification] = useState(null); // { message, type: 'success' | 'error' }
+  const [category, setCategory] = useState('Todos');
 
   // --- DATA SYNC ENGINE ---
   const fetchData = useCallback(async () => {
@@ -397,91 +398,138 @@ const App = () => {
         )}
 
         {/* --- CLIENT VIEW --- */}
-        {role === 'client' && view === 'home' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div style={{ padding: '2rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ background: '#FFB800', padding: '8px', borderRadius: '12px' }}><ShoppingBag size={24} color="white" fill="white" /></div>
-                <h1 style={{ fontWeight: 900, fontSize: '1.6rem' }}>LlegoYA</h1>
+        {(role === 'client' || role === 'cliente') && view === 'home' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ background: '#F8FAFC', minHeight: '100vh' }}>
+            {/* Elite Header */}
+            <div style={{ background: 'linear-gradient(180deg, #0F172A 0%, #1E293B 100%)', padding: '4rem 2rem 6rem', borderRadius: '0 0 60px 60px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'rgba(0, 209, 178, 0.1)', filter: 'blur(80px)', borderRadius: '50%' }} />
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '20px', backdropFilter: 'blur(10px)' }}><ShoppingBag size={24} color="#00D1B2" /></div>
+                    <span style={{ color: 'white', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-0.5px' }}>LlegoYA</span>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px 18px', borderRadius: '18px', color: 'white', fontWeight: 800, fontSize: '0.8rem', backdropFilter: 'blur(10px)' }}>Bs. 0.00</div>
+                </div>
+                <h1 style={{ color: 'white', fontSize: '2.8rem', fontWeight: 950, lineHeight: 1, letterSpacing: '-1.5px', marginBottom: '1rem' }}>¿Qué se te antoja hoy?</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '0.9rem' }}>
+                  <MapPin size={18} color="#00D1B2" /> Mercado Central • La Paz
+                </div>
               </div>
-              <div style={{ background: '#F1F5F9', padding: '8px 15px', borderRadius: '15px', fontSize: '0.8rem', fontWeight: 800 }}>Bs. 0.00</div>
             </div>
 
-            <div style={{ padding: '0 1.5rem' }}>
-              <div style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', padding: '2.5rem', borderRadius: '40px', color: 'white', marginBottom: '2.5rem', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                  <p style={{ opacity: 0.6, fontSize: '0.85rem' }}>¿Hambre de mercado?</p>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: 900, margin: '0.5rem 0' }}>Del Mercado Rodríguez a tu puerta</h2>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.1)', padding: '8px 15px', borderRadius: '12px', fontSize: '0.8rem', marginTop: '1rem' }}>
-                    <MapPin size={16} /> Bolivia, La Paz
-                  </div>
+            {/* Categorías Elite */}
+            <div style={{ marginTop: '-40px', padding: '0 1.5rem' }}>
+              <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '2rem', scrollbarWidth: 'none', position: 'relative', zIndex: 10 }}>
+                {['Todos', 'Comida', 'Verduras', 'Api', 'Carnes'].map(cat => (
+                  <button 
+                    key={cat} 
+                    onClick={() => setCategory(cat)}
+                    style={{ 
+                      padding: '18px 30px', 
+                      borderRadius: '25px', 
+                      border: 'none',
+                      background: category === cat ? '#00D1B2' : 'white',
+                      color: category === cat ? 'white' : '#64748B',
+                      fontWeight: 900,
+                      fontSize: '0.9rem',
+                      whiteSpace: 'nowrap',
+                      boxShadow: category === cat ? '0 15px 30px rgba(0,209,178,0.3)' : '0 10px 25px rgba(0,0,0,0.05)',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transform: category === cat ? 'translateY(-5px)' : 'none'
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ paddingBottom: '4rem' }}>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 950, marginBottom: '2rem', color: '#0F172A', letterSpacing: '-0.5px' }}>Puestos Destacados</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2.5rem' }}>
+                  {vendors.filter(v => category === 'Todos' || v.category === category).map(v => (
+                    <motion.div 
+                      key={v.id} 
+                      whileTap={{ scale: 0.96 }}
+                      className="vendor-card-elite" 
+                      onClick={() => { setSelectedV(v); setView('products'); }}
+                    >
+                      <div style={{ position: 'relative', height: '280px', overflow: 'hidden' }}>
+                        <img 
+                          src={v.image_url} 
+                          alt={v.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s' }} 
+                        />
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.7) 100%)' }} />
+                        <div style={{ position: 'absolute', top: '25px', right: '25px', background: 'rgba(255,255,255,0.95)', padding: '10px 15px', borderRadius: '18px', fontWeight: 950, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(10px)' }}>
+                          <Star size={16} fill="#FFB800" color="#FFB800" /> {v.rating || '4.8'}
+                        </div>
+                        <div style={{ position: 'absolute', bottom: '25px', left: '25px', right: '25px' }}>
+                          <div style={{ color: 'white', fontSize: '1.6rem', fontWeight: 950, letterSpacing: '-0.5px' }}>{v.name}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', marginTop: '5px', fontWeight: 700 }}>
+                            <Clock size={16} color="#00D1B2" /> {v.delivery_time} • {v.category}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-                <Coffee size={120} style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.1, color: 'white' }} />
               </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontWeight: 800 }}>Puestos Sugeridos</h3>
-                <span style={{ fontSize: '0.8rem', color: '#00A391', fontWeight: 800 }}>Ver todos</span>
-              </div>
-
-              {vendors.map(v => (
-                <motion.div key={v.id} whileTap={{ scale: 0.98 }} className="vendor-card" onClick={() => { setSelectedV(v); setView('products'); }}>
-                  <img src={v.image_url} />
-                  <div className="vendor-info">
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <strong style={{ fontSize: '1.1rem' }}>{v.name}</strong>
-                      <div style={{ color: '#F59E0B', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={14} fill="#F59E0B" /> 4.9</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
-                      <span style={{ background: '#F1F5F9', color: '#64748B', fontSize: '0.7rem', fontWeight: 800, padding: '4px 10px', borderRadius: '8px' }}>15-25 MIN</span>
-                      <span style={{ color: '#94A3B8', fontSize: '0.7rem' }}>•</span>
-                      <span style={{ color: '#64748B', fontSize: '0.7rem', fontWeight: 700 }}>ENVÍO BS. 6</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
             </div>
           </motion.div>
         )}
 
+
         {/* --- PRODUCTS VIEW --- */}
-        {role === 'client' && view === 'products' && selectedV && (
-          <motion.div initial={{ x: 100 }} animate={{ x: 0 }}>
-            <div style={{ height: '300px', position: 'relative' }}>
-              <img src={selectedV.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)' }} />
-              <button onClick={() => setView('home')} style={{ position: 'absolute', top: '2rem', left: '1.5rem', background: 'white', padding: '12px', borderRadius: '18px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}><ArrowLeft size={20} /></button>
-            </div>
-            <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: '45px 45px 0 0', marginTop: '-45px', position: 'relative', minHeight: '600px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.8rem', fontWeight: 950 }}>{selectedV.name}</h2>
-                <div style={{ background: '#F59E0B15', color: '#F59E0B', padding: '8px 15px', borderRadius: '15px', fontWeight: 900 }}>⭐ 4.9</div>
+        {(role === 'client' || role === 'cliente') && view === 'products' && selectedV && (
+          <motion.div initial={{ y: 100 }} animate={{ y: 0 }} style={{ background: 'white', minHeight: '100vh' }}>
+            <div style={{ height: '350px', position: 'relative' }}>
+              <img src={selectedV.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 40%, rgba(0,0,0,0.8) 100%)' }} />
+              <button onClick={() => setView('home')} style={{ position: 'absolute', top: '2rem', left: '1.5rem', background: 'white', padding: '15px', borderRadius: '22px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ArrowLeft size={24} color="#0F172A" />
+              </button>
+              <div style={{ position: 'absolute', bottom: '3rem', left: '2rem', right: '2rem' }}>
+                <h2 style={{ color: 'white', fontSize: '2.4rem', fontWeight: 950, letterSpacing: '-1px' }}>{selectedV.name}</h2>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <span style={{ background: '#00D1B2', color: 'white', padding: '6px 15px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 900 }}>{selectedV.category}</span>
+                  <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '6px 15px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800, backdropFilter: 'blur(10px)' }}>⭐ {selectedV.rating}</span>
+                </div>
               </div>
-              
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem', overflowX: 'auto', paddingBottom: '1rem' }}>
+            </div>
+
+            <div style={{ padding: '2rem 1.5rem', marginTop: '-20px', background: 'white', borderRadius: '40px 40px 0 0', position: 'relative', zIndex: 10 }}>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '2.5rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
                 {['Todo', 'Popular', 'Nuevos', 'Combos'].map(cat => (
-                  <span key={cat} style={{ background: cat === 'Todo' ? '#1E293B' : '#F1F5F9', color: cat === 'Todo' ? 'white' : '#64748B', padding: '10px 20px', borderRadius: '15px', fontSize: '0.8rem', fontWeight: 800, whiteSpace: 'nowrap' }}>{cat}</span>
+                  <span key={cat} style={{ background: cat === 'Todo' ? '#0F172A' : '#F1F5F9', color: cat === 'Todo' ? 'white' : '#64748B', padding: '12px 25px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 800, whiteSpace: 'nowrap' }}>{cat}</span>
                 ))}
               </div>
 
-              {(products[selectedV.id] || []).map(p => (
-                <div key={p.id} style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem 0', borderBottom: '1px solid #F1F5F9', alignItems: 'center' }}>
-                  <img src={p.image_url} style={{ width: '90px', height: '90px', borderRadius: '25px', objectFit: 'cover' }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: '1rem' }}>{p.name}</div>
-                    <div style={{ color: '#00A391', fontWeight: 950, fontSize: '1.2rem', marginTop: '6px' }}>Bs. {p.price.toFixed(2)}</div>
-                  </div>
-                  <button className="btn-primary" style={{ padding: '12px', borderRadius: '18px' }} onClick={() => { setCart([{ p, q: 1 }]); setView('checkout'); }}>
-                    <Plus size={24} />
-                  </button>
-                </div>
-              ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {(db.products || []).filter(p => p.vendor_id === selectedV.id).map(p => (
+                  <motion.div 
+                    key={p.id} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem', background: '#F8FAFC', borderRadius: '35px', alignItems: 'center', border: '1px solid rgba(0,0,0,0.02)' }}
+                  >
+                    <img src={p.image_url} style={{ width: '100px', height: '100px', borderRadius: '28px', objectFit: 'cover', boxShadow: '0 8px 20px rgba(0,0,0,0.05)' }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 850, fontSize: '1.1rem', color: '#0F172A' }}>{p.name}</div>
+                      <div style={{ color: '#00D1B2', fontWeight: 950, fontSize: '1.3rem', marginTop: '6px' }}>Bs. {p.price.toFixed(2)}</div>
+                    </div>
+                    <button className="btn-primary" style={{ width: '55px', height: '55px', padding: 0, borderRadius: '20px', background: '#0F172A' }} onClick={() => { setCart([{ p, q: 1 }]); setView('checkout'); }}>
+                      <Plus size={24} color="white" />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
 
         {/* --- CHECKOUT VIEW --- */}
-        {role === 'client' && view === 'checkout' && (
+        {(role === 'client' || role === 'cliente') && view === 'checkout' && (
           <div style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '2.5rem' }}>
               <button onClick={() => setView('products')} style={{ background: 'white', padding: '10px', borderRadius: '15px', border: '1px solid #F1F5F9' }}><ArrowLeft size={20} /></button>
@@ -671,19 +719,27 @@ const App = () => {
             {/* --- COMMON HISTORY VIEW --- */}
             {view === 'history' && (
               <div className="dashboard">
-                <Header title="Mis Pedidos" subtitle="HISTORIAL DE ACTIVIDAD" icon={History} />
+                <div style={{ padding: '2rem 0 1.5rem' }}>
+                  <h1 style={{ fontSize: '2.2rem', fontWeight: 950, letterSpacing: '-1px' }}>Actividad</h1>
+                  <p style={{ color: '#64748B', fontWeight: 700, fontSize: '0.85rem' }}>Seguimiento de tus pedidos</p>
+                </div>
+
                 {(db.orders.filter(o => 
-                  (role === 'cliente' && o.client_phone === phone) || 
-                  (role === 'chaski' && o.courier_id === phone) ||
-                  (role === 'caserita' && o.vendor_id === phone) ||
+                  ((role === 'cliente' || role === 'client') && o.client_phone === phone) || 
+                  ((role === 'chaski' || role === 'courier') && o.courier_id === phone) ||
+                  ((role === 'caserita' || role === 'vendor') && o.vendor_id === phone) ||
                   role === 'admin'
                 )).length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '5rem 2rem', color: '#94A3B8' }}>No hay pedidos registrados aún.</div>
+                  <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+                    <div style={{ background: '#F1F5F9', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}><History size={30} color="#94A3B8" /></div>
+                    <h3 style={{ color: '#64748B', fontWeight: 800 }}>Sin pedidos</h3>
+                    <p style={{ fontSize: '0.8rem', color: '#94A3B8', marginTop: '5px' }}>Tus órdenes aparecerán aquí.</p>
+                  </div>
                 ) : (
                   db.orders.filter(o => 
-                    (role === 'cliente' && o.client_phone === phone) || 
-                    (role === 'chaski' && o.courier_id === phone) ||
-                    (role === 'caserita' && o.vendor_id === phone) ||
+                    ((role === 'cliente' || role === 'client') && o.client_phone === phone) || 
+                    ((role === 'chaski' || role === 'courier') && o.courier_id === phone) ||
+                    ((role === 'caserita' || role === 'vendor') && o.vendor_id === phone) ||
                     role === 'admin'
                   ).map(o => (
                     <motion.div key={o.id} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', marginBottom: '1.5rem' }}>

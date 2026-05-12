@@ -5,5 +5,6 @@ const vendorController = require('../controllers/vendorController');
 router.get('/', vendorController.getAllVendors);
 router.post('/', vendorController.createVendor);
 router.get('/:id', vendorController.getVendorById);
+router.get('/:id/products', vendorController.getVendorProducts);
 
 module.exports = router;

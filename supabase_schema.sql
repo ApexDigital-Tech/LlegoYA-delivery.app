@@ -1,11 +1,11 @@
--- LlegoYA Supabase Schema
-
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- LlegoYA Supabase Schema Optimized for Custom IDs
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS vendors CASCADE;
 
 -- 1. Vendors Table
-CREATE TABLE IF NOT EXISTS vendors (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE vendors (
+  id TEXT PRIMARY KEY, 
   name TEXT NOT NULL,
   market_name TEXT NOT NULL,
   category TEXT NOT NULL,
@@ -21,9 +21,9 @@ CREATE TABLE IF NOT EXISTS vendors (
 );
 
 -- 2. Products Table
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE products (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  vendor_id UUID REFERENCES vendors(id) ON DELETE CASCADE,
+  vendor_id TEXT REFERENCES vendors(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   price DECIMAL NOT NULL,
   description TEXT,
@@ -35,14 +35,14 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- 3. Orders Table
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE orders (
   id TEXT PRIMARY KEY, -- Format LY-XXXX
   client_name TEXT,
   client_phone TEXT,
-  vendor_id UUID REFERENCES vendors(id),
+  vendor_id TEXT REFERENCES vendors(id),
   vendor_name TEXT,
   total DECIMAL NOT NULL,
-  items TEXT[], -- Array of item strings
+  items TEXT[], 
   status TEXT DEFAULT 'pendiente',
   stage INTEGER DEFAULT 1,
   courier_id TEXT,
@@ -52,9 +52,16 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Realtime for all tables (Postgres 13+ way)
--- Note: You might need to do this via the Supabase UI (Database -> Replication)
--- but these SQL commands are for reference.
--- ALTER PUBLICATION supabase_realtime ADD TABLE vendors;
--- ALTER PUBLICATION supabase_realtime ADD TABLE products;
--- ALTER PUBLICATION supabase_realtime ADD TABLE orders;
+-- Habilitar RLS pero con políticas abiertas para el MVP
+ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public full access" ON vendors FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public full access" ON products FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public full access" ON orders FOR ALL USING (true) WITH CHECK (true);
+
+-- Realtime
+alter publication supabase_realtime add table vendors;
+alter publication supabase_realtime add table products;
+alter publication supabase_realtime add table orders;

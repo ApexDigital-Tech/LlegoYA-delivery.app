@@ -41,3 +41,17 @@ exports.getVendorById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.getVendorProducts = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('vendor_id', req.params.id);
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
