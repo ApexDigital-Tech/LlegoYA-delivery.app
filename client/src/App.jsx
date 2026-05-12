@@ -3,7 +3,7 @@ import {
   ShoppingBag, Star, Clock, MapPin, ArrowLeft, Plus, 
   CheckCircle, Store, TrendingUp, Shield, History, 
   LayoutDashboard, ChevronRight, Phone, Smartphone, 
-  CreditCard, Search, RefreshCw, Zap, Award, DollarSign, Settings,
+  CreditCard, Search, RefreshCw, Zap, Award, DollarSign, Settings, Home, LogOut, Lock,
   Truck, BarChart3, Info, Power, User, Eye, EyeOff, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
