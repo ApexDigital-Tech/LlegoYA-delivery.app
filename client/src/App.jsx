@@ -569,79 +569,115 @@ const App = () => {
 
         {/* --- CASERITA PANEL --- */}
         {role === 'vendor' && (() => {
-          const currentV = vendors.find(v => v.id === vid);
+          // Use the central db.vendors for perfect synchronization with the catalog
+          const currentV = db.vendors.find(v => String(v.id).trim() === String(vid).trim());
+          
+          if (!currentV) {
+            return (
+              <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+                <div style={{ background: '#FFF5F5', color: '#C53030', padding: '2rem', borderRadius: '30px', border: '2px dashed #FEB2B2' }}>
+                  <AlertCircle size={40} style={{ marginBottom: '1rem' }} />
+                  <h3 style={{ fontWeight: 800 }}>Error de Identidad</h3>
+                  <p style={{ fontSize: '0.85rem' }}>No encontramos el negocio con ID: {vid}.<br/>Por favor, verifica tu número de acceso.</p>
+                  <button onClick={() => setRole(null)} className="btn-primary" style={{ marginTop: '1.5rem', background: '#C53030' }}>Volver</button>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              {/* Premium Business Header */}
-              <div style={{ position: 'relative', height: '220px', background: '#0F172A', borderRadius: '0 0 50px 50px', overflow: 'hidden', marginBottom: '2rem' }}>
+              {/* Premium Business Header - Matches Catalog Identity */}
+              <div style={{ position: 'relative', height: '260px', background: '#0F172A', borderRadius: '0 0 60px 60px', overflow: 'hidden', marginBottom: '2rem', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
                 <img 
-                  src={currentV?.image_url || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=800'} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} 
+                  src={currentV.image_url} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} 
+                  alt={currentV.name}
                 />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent, rgba(15,23,42,0.9))' }} />
-                <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: '25px', border: '4px solid white', overflow: 'hidden', background: 'white' }}>
-                    <img src={currentV?.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent, rgba(15,23,42,0.95))' }} />
+                <div style={{ position: 'absolute', bottom: '2.5rem', left: '2rem', right: '2rem', display: 'flex', alignItems: 'center', gap: '25px' }}>
+                  <div style={{ width: '100px', height: '100px', borderRadius: '30px', border: '5px solid white', overflow: 'hidden', background: 'white', boxShadow: '0 10px 20px rgba(0,0,0,0.3)' }}>
+                    <img src={currentV.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
-                    <h1 style={{ color: 'white', fontWeight: 950, fontSize: '1.8rem', margin: 0, letterSpacing: '-1px' }}>{currentV?.name || userName}</h1>
-                    <span style={{ color: '#00D1B2', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase' }}>{currentV?.category || 'Negocio'} • ID: {vid}</span>
+                    <div style={{ background: '#10B981', color: 'white', fontSize: '0.65rem', padding: '4px 10px', borderRadius: '8px', display: 'inline-block', fontWeight: 900, marginBottom: '8px', letterSpacing: '1px' }}>NEGOCIO VERIFICADO</div>
+                    <h1 style={{ color: 'white', fontWeight: 950, fontSize: '2.2rem', margin: 0, letterSpacing: '-1.5px', lineHeight: 1 }}>{currentV.name}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                      <span style={{ color: '#00D1B2', fontWeight: 800, fontSize: '0.85rem' }}>{currentV.category}</span>
+                      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
+                      <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', fontWeight: 600 }}>ID: {vid}</span>
+                    </div>
                   </div>
                 </div>
               </div>
               
               <div style={{ padding: '0 1.5rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '2.5rem' }}>
-                  <div className="admin-premium-card" style={{ borderBottom: '4px solid #10B981' }}>
-                    <DollarSign size={20} color="#10B981" />
-                    <span>Ventas Hoy</span>
-                    <strong>Bs. {db.orders.filter(o => o.vendor_id === vid).reduce((s, o) => s + o.total, 0).toFixed(2)}</strong>
+                  <div className="admin-premium-card" style={{ borderBottom: '5px solid #10B981', background: 'white' }}>
+                    <div style={{ background: '#10B98120', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                      <DollarSign size={22} color="#10B981" />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>VENTAS HOY</span>
+                    <strong style={{ fontSize: '1.5rem', color: '#0F172A' }}>Bs. {db.orders.filter(o => String(o.vendor_id) === String(vid)).reduce((s, o) => s + o.total, 0).toFixed(2)}</strong>
                   </div>
-                  <div className="admin-premium-card" style={{ borderBottom: '4px solid #F59E0B' }}>
-                    <Award size={20} color="#F59E0B" />
-                    <span>Calificación</span>
-                    <strong>{currentV?.rating || '4.9'}/5.0</strong>
+                  <div className="admin-premium-card" style={{ borderBottom: '5px solid #F59E0B', background: 'white' }}>
+                    <div style={{ background: '#F59E0B20', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                      <Star size={22} color="#F59E0B" fill="#F59E0B" />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>CALIFICACIÓN</span>
+                    <strong style={{ fontSize: '1.5rem', color: '#0F172A' }}>{currentV.rating || '4.9'}<small style={{ fontSize: '0.8rem', opacity: 0.5 }}>/5.0</small></strong>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ fontWeight: 800 }}>Pedidos Entrantes</h3>
-                  <button onClick={() => setDemoViewAll(!demoViewAll)} style={{ border: 'none', background: demoViewAll ? '#00A39120' : '#F1F5F9', color: demoViewAll ? '#00A391' : '#64748B', padding: '8px 15px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {demoViewAll ? <Eye size={14}/> : <EyeOff size={14}/>} {demoViewAll ? 'MODO GLOBAL' : 'MIS PEDIDOS'}
+                  <h3 style={{ fontWeight: 900, fontSize: '1.2rem', color: '#0F172A' }}>Pedidos para Preparar</h3>
+                  <button onClick={() => setDemoViewAll(!demoViewAll)} style={{ border: 'none', background: demoViewAll ? '#6366F120' : '#F1F5F9', color: demoViewAll ? '#6366F1' : '#64748B', padding: '10px 18px', borderRadius: '15px', fontSize: '0.75rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s' }}>
+                    {demoViewAll ? <Eye size={16}/> : <EyeOff size={16}/>} {demoViewAll ? 'VISTA GLOBAL' : 'MIS PEDIDOS'}
                   </button>
                 </div>
 
                 <AnimatePresence>
-                  {(demoViewAll ? db.orders : db.orders.filter(o => o.vendor_id === vid)).filter(o => o.stage < 3).map(o => (
-                    <motion.div key={o.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', marginBottom: '1.2rem', borderLeft: '8px solid #00D1B2' }}>
-                      {demoViewAll && o.vendor_id !== vid && <div style={{ background: '#6366F1', color: 'white', fontSize: '0.65rem', padding: '5px 12px', borderRadius: '10px', display: 'inline-block', marginBottom: '1rem', fontWeight: 900 }}>PEDIDO PARA: {o.vendor_name}</div>}
+                  {(demoViewAll ? db.orders : db.orders.filter(o => String(o.vendor_id) === String(vid))).filter(o => o.stage < 3).map(o => (
+                    <motion.div key={o.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="glass-panel" style={{ padding: '2rem', borderRadius: '40px', marginBottom: '1.5rem', borderLeft: '10px solid #00D1B2', boxShadow: '0 15px 30px rgba(0,0,0,0.05)' }}>
+                      {demoViewAll && String(o.vendor_id) !== String(vid) && <div style={{ background: '#6366F1', color: 'white', fontSize: '0.65rem', padding: '6px 14px', borderRadius: '12px', display: 'inline-block', marginBottom: '1.2rem', fontWeight: 900, textTransform: 'uppercase' }}>DESTINADO A: {o.vendor_name}</div>}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                          <div style={{ fontWeight: 950, fontSize: '1.3rem' }}>Orden #{o.id}</div>
-                          <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>Cliente: {o.client_name}</div>
+                          <div style={{ fontWeight: 950, fontSize: '1.5rem', color: '#0F172A' }}>Orden #{o.id.substring(0,6).toUpperCase()}</div>
+                          <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <User size={14}/> {o.client_name}
+                          </div>
                         </div>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 900 }}>Bs. {o.total.toFixed(2)}</div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 950, color: '#0F172A' }}>Bs. {o.total.toFixed(2)}</div>
+                          <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#10B981', marginTop: '4px' }}>PAGADO CON QR</div>
+                        </div>
                       </div>
-                      <div style={{ background: '#F8FAFC', padding: '1.2rem', borderRadius: '20px', margin: '1.5rem 0', fontSize: '0.9rem' }}>
-                        <strong style={{ color: '#00A391' }}>Items:</strong><br/>
-                        <span style={{ fontWeight: 600 }}>{o.items.join(', ')}</span>
+                      <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '25px', margin: '1.8rem 0', border: '1px solid #E2E8F0' }}>
+                        <div style={{ color: '#94A3B8', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>DETALLE DEL PEDIDO</div>
+                        <span style={{ fontWeight: 700, fontSize: '1rem', color: '#334155' }}>{o.items.join(', ')}</span>
                       </div>
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        {o.stage === 1 && <button className="btn-primary" style={{ flex: 1, height: '65px', background: '#EF4444' }} onClick={() => updateOrder(o.id, 2)}>Aceptar y Cocinar</button>}
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        {o.stage === 1 && (
+                          <button className="btn-primary" style={{ flex: 1, height: '70px', background: '#0F172A', fontSize: '1rem', borderRadius: '22px' }} onClick={() => updateOrder(o.id, 2)}>
+                            ACEPTAR Y COCINAR
+                          </button>
+                        )}
                         {o.stage === 2 && (
-                          <button className="btn-primary" style={{ flex: 1, height: '65px', background: '#10B981' }} onClick={() => updateOrder(o.id, 3)}>
-                            <Zap size={20} /> ¡Listo para Chaski!
+                          <button className="btn-primary" style={{ flex: 1, height: '70px', background: '#10B981', fontSize: '1rem', borderRadius: '22px' }} onClick={() => updateOrder(o.id, 3)}>
+                            <Zap size={20} fill="white" /> ¡LISTO PARA CHASKI!
                           </button>
                         )}
                       </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
-                {(demoViewAll ? db.orders : db.orders.filter(o => o.vendor_id === vid)).filter(o => o.stage < 3).length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                    <div style={{ background: '#F1F5F9', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}><Clock size={32} color="#94A3B8" /></div>
-                    <h4 style={{ color: '#64748B' }}>No hay pedidos nuevos</h4>
-                    <p style={{ fontSize: '0.8rem', color: '#94A3B8', marginTop: '5px' }}>Los pedidos de los clientes aparecerán aquí automáticamente.</p>
+                {(demoViewAll ? db.orders : db.orders.filter(o => String(o.vendor_id) === String(vid))).filter(o => o.stage < 3).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+                    <div style={{ background: '#F1F5F9', width: '100px', height: '100px', borderRadius: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem', transform: 'rotate(-10deg)' }}>
+                      <Clock size={40} color="#94A3B8" />
+                    </div>
+                    <h3 style={{ color: '#64748B', fontWeight: 900 }}>¡Todo al día!</h3>
+                    <p style={{ fontSize: '0.9rem', color: '#94A3B8', marginTop: '8px', maxWidth: '200px', margin: '8px auto 0' }}>En cuanto un cliente haga un pedido, vibrará tu pantalla.</p>
                   </div>
                 )}
               </div>
