@@ -569,8 +569,9 @@ const App = () => {
 
         {/* --- CASERITA PANEL --- */}
         {role === 'vendor' && (() => {
-          // Robust check for db.vendors to prevent blank screen
-          const currentV = (db.vendors || []).find(v => String(v.id).trim() === String(vid).trim());
+          // Merge both sources to be 1000% sure we find the identity
+          const allPossibleVendors = [...(vendors || []), ...(db.vendors || [])];
+          const currentV = allPossibleVendors.find(v => String(v.id).trim() === String(vid).trim());
           
           if (!currentV) {
             return (
