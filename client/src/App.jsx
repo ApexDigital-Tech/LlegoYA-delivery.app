@@ -568,67 +568,86 @@ const App = () => {
         )}
 
         {/* --- CASERITA PANEL --- */}
-        {role === 'vendor' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Header title="Gestión de Puesto" subtitle={`${userName} - ID: ${vid.substring(0,8)}...`} icon={Store} />
-            
-            <div style={{ padding: '0 1.5rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '2.5rem' }}>
-                <div className="admin-premium-card" style={{ borderBottom: '4px solid #10B981' }}>
-                  <DollarSign size={20} color="#10B981" />
-                  <span>Ventas Hoy</span>
-                  <strong>Bs. {db.orders.filter(o=>o.vendor_id===vid).reduce((s,o)=>s+o.total,0).toFixed(2)}</strong>
-                </div>
-                <div className="admin-premium-card" style={{ borderBottom: '4px solid #F59E0B' }}>
-                  <Award size={20} color="#F59E0B" />
-                  <span>Calificación</span>
-                  <strong>4.9/5.0</strong>
+        {role === 'vendor' && (() => {
+          const currentV = vendors.find(v => v.id === vid);
+          return (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {/* Premium Business Header */}
+              <div style={{ position: 'relative', height: '220px', background: '#0F172A', borderRadius: '0 0 50px 50px', overflow: 'hidden', marginBottom: '2rem' }}>
+                <img 
+                  src={currentV?.image_url || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=800'} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} 
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent, rgba(15,23,42,0.9))' }} />
+                <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: '25px', border: '4px solid white', overflow: 'hidden', background: 'white' }}>
+                    <img src={currentV?.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div>
+                    <h1 style={{ color: 'white', fontWeight: 950, fontSize: '1.8rem', margin: 0, letterSpacing: '-1px' }}>{currentV?.name || userName}</h1>
+                    <span style={{ color: '#00D1B2', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase' }}>{currentV?.category || 'Negocio'} • ID: {vid}</span>
+                  </div>
                 </div>
               </div>
+              
+              <div style={{ padding: '0 1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '2.5rem' }}>
+                  <div className="admin-premium-card" style={{ borderBottom: '4px solid #10B981' }}>
+                    <DollarSign size={20} color="#10B981" />
+                    <span>Ventas Hoy</span>
+                    <strong>Bs. {db.orders.filter(o => o.vendor_id === vid).reduce((s, o) => s + o.total, 0).toFixed(2)}</strong>
+                  </div>
+                  <div className="admin-premium-card" style={{ borderBottom: '4px solid #F59E0B' }}>
+                    <Award size={20} color="#F59E0B" />
+                    <span>Calificación</span>
+                    <strong>{currentV?.rating || '4.9'}/5.0</strong>
+                  </div>
+                </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontWeight: 800 }}>Pedidos Entrantes</h3>
-                <button onClick={() => setDemoViewAll(!demoViewAll)} style={{ border: 'none', background: demoViewAll ? '#00A39120' : '#F1F5F9', color: demoViewAll ? '#00A391' : '#64748B', padding: '8px 15px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {demoViewAll ? <Eye size={14}/> : <EyeOff size={14}/>} {demoViewAll ? 'VIENDO TODO' : 'MODO DEMO'}
-                </button>
-              </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontWeight: 800 }}>Pedidos Entrantes</h3>
+                  <button onClick={() => setDemoViewAll(!demoViewAll)} style={{ border: 'none', background: demoViewAll ? '#00A39120' : '#F1F5F9', color: demoViewAll ? '#00A391' : '#64748B', padding: '8px 15px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {demoViewAll ? <Eye size={14}/> : <EyeOff size={14}/>} {demoViewAll ? 'MODO GLOBAL' : 'MIS PEDIDOS'}
+                  </button>
+                </div>
 
-              <AnimatePresence>
-                {(demoViewAll ? db.orders : db.orders.filter(o => o.vendor_id === vid)).filter(o => o.stage < 3).map(o => (
-                  <motion.div key={o.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', marginBottom: '1.2rem' }}>
-                    {demoViewAll && o.vendor_id !== vid && <div style={{ background: '#6366F1', color: 'white', fontSize: '0.65rem', padding: '5px 12px', borderRadius: '10px', display: 'inline-block', marginBottom: '1rem', fontWeight: 900 }}>PEDIDO PARA: {o.vendor_name}</div>}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <div style={{ fontWeight: 950, fontSize: '1.3rem' }}>Orden #{o.id}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>Cliente: {o.client_name}</div>
+                <AnimatePresence>
+                  {(demoViewAll ? db.orders : db.orders.filter(o => o.vendor_id === vid)).filter(o => o.stage < 3).map(o => (
+                    <motion.div key={o.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="glass-panel" style={{ padding: '1.8rem', borderRadius: '35px', marginBottom: '1.2rem', borderLeft: '8px solid #00D1B2' }}>
+                      {demoViewAll && o.vendor_id !== vid && <div style={{ background: '#6366F1', color: 'white', fontSize: '0.65rem', padding: '5px 12px', borderRadius: '10px', display: 'inline-block', marginBottom: '1rem', fontWeight: 900 }}>PEDIDO PARA: {o.vendor_name}</div>}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <div style={{ fontWeight: 950, fontSize: '1.3rem' }}>Orden #{o.id}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>Cliente: {o.client_name}</div>
+                        </div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900 }}>Bs. {o.total.toFixed(2)}</div>
                       </div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 900 }}>Bs. {o.total.toFixed(2)}</div>
-                    </div>
-                    <div style={{ background: '#F8FAFC', padding: '1.2rem', borderRadius: '20px', margin: '1.5rem 0', fontSize: '0.9rem' }}>
-                      <strong style={{ color: '#00A391' }}>Items:</strong><br/>
-                      <span style={{ fontWeight: 600 }}>{o.items.join(', ')}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      {o.stage === 1 && <button className="btn-primary" style={{ flex: 1, height: '65px', background: '#EF4444' }} onClick={() => updateOrder(o.id, 2)}>Aceptar y Cocinar</button>}
-                      {o.stage === 2 && (
-                        <button className="btn-primary" style={{ flex: 1, height: '65px', background: '#10B981' }} onClick={() => updateOrder(o.id, 3)}>
-                          <Zap size={20} /> ¡Listo para Chaski!
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {(demoViewAll ? db.orders : db.orders.filter(o => o.vendor_id === vid)).filter(o => o.stage < 3).length === 0 && (
-                <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                  <div style={{ background: '#F1F5F9', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}><Clock size={32} color="#94A3B8" /></div>
-                  <h4 style={{ color: '#64748B' }}>No hay pedidos nuevos</h4>
-                  <p style={{ fontSize: '0.8rem', color: '#94A3B8', marginTop: '5px' }}>Los pedidos de los clientes aparecerán aquí automáticamente.</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
+                      <div style={{ background: '#F8FAFC', padding: '1.2rem', borderRadius: '20px', margin: '1.5rem 0', fontSize: '0.9rem' }}>
+                        <strong style={{ color: '#00A391' }}>Items:</strong><br/>
+                        <span style={{ fontWeight: 600 }}>{o.items.join(', ')}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {o.stage === 1 && <button className="btn-primary" style={{ flex: 1, height: '65px', background: '#EF4444' }} onClick={() => updateOrder(o.id, 2)}>Aceptar y Cocinar</button>}
+                        {o.stage === 2 && (
+                          <button className="btn-primary" style={{ flex: 1, height: '65px', background: '#10B981' }} onClick={() => updateOrder(o.id, 3)}>
+                            <Zap size={20} /> ¡Listo para Chaski!
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                {(demoViewAll ? db.orders : db.orders.filter(o => o.vendor_id === vid)).filter(o => o.stage < 3).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                    <div style={{ background: '#F1F5F9', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}><Clock size={32} color="#94A3B8" /></div>
+                    <h4 style={{ color: '#64748B' }}>No hay pedidos nuevos</h4>
+                    <p style={{ fontSize: '0.8rem', color: '#94A3B8', marginTop: '5px' }}>Los pedidos de los clientes aparecerán aquí automáticamente.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          );
+        })()}
 
         {/* --- CHASKI PANEL --- */}
         {role === 'chaski' && (
