@@ -506,7 +506,7 @@ const App = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {(db.products || []).filter(p => p.vendor_id === selectedV.id).map(p => (
+                {(products[selectedV.id] || []).map(p => (
                   <motion.div 
                     key={p.id} 
                     initial={{ opacity: 0, y: 20 }}
