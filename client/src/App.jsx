@@ -153,13 +153,13 @@ const App = () => {
         setRole('admin'); setUserName('Super Admin');
       } else if (phone.startsWith('6')) {
         setRole('vendor');
-        setVid(phone); // Use the phone as VID directly for the 6000001-5 sequence
+        setVid(phone); 
         const names = {
-          '6000001': 'El Horno',
-          '6000002': 'Doña Paulina',
-          '6000003': 'Mercado Central',
-          '6000004': 'Tía María',
-          '6000005': 'El Torito'
+          '60000001': 'El Horno',
+          '60000002': 'Doña Paulina',
+          '60000003': 'Mercado Central',
+          '60000004': 'Tía María',
+          '60000005': 'El Torito'
         };
         setUserName(names[phone] || 'Caserita');
       } else if (phone.startsWith('7')) {
