@@ -508,7 +508,11 @@ const App = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {(products[selectedV.id] || []).map(p => (
+                {(() => {
+                  const vid = String(selectedV.id).trim();
+                  // Support both 7 and 8 digit lookup just in case of cache
+                  const pList = products[vid] || (vid.length === 8 ? products[vid.replace('6000000', '600000')] : products['6000000' + vid.slice(-1)]) || [];
+                  return pList.map(p => (
                   <motion.div 
                     key={p.id} 
                     initial={{ opacity: 0, y: 20 }}
@@ -524,7 +528,7 @@ const App = () => {
                       <Plus size={24} color="white" />
                     </button>
                   </motion.div>
-                ))}
+                ))})()}
               </div>
             </div>
           </motion.div>
